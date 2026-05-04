@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход | TechShop{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 4rem 0;">
+    <div style="width: 100%; max-width: 450px; background: var(--bg-card); padding: 3rem; border-radius: var(--radius-lg); border: 1px solid var(--glass-border); box-shadow: var(--shadow-md);" data-aos="fade-up">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fa fa-user-circle fa-4x text-gradient" style="margin-bottom: 1rem;"></i>
+            <h2>Вход в аккаунт</h2>
+            <p style="color: var(--text-muted);">Добро пожаловать обратно в TechShop</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Логин</label>
+                <input type="text" name="username" class="form-control" required autofocus placeholder="Введите логин">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Пароль</label>
+                <input type="password" name="password" class="form-control" required placeholder="Введите пароль">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1.1rem; margin-top: 1rem;">
+                Войти
+            </button>
+        </form>
+
+        <div style="margin-top: 2rem; text-align: center; color: var(--text-muted); border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+            Нет аккаунта? <a href="{% url 'register' %}" style="font-weight: 600;">Зарегистрируйтесь</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

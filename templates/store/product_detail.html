@@ -1,0 +1,414 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} | TechShop{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+}
+
+.pd-gallery {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 500px;
+    border: 1px solid var(--glass-border);
+}
+
+.pd-gallery img {
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.pd-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.pd-cat {
+    color: var(--accent-primary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.pd-title {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+.pd-meta {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.pd-rating {
+    color: var(--warning);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pd-rating span {
+    color: var(--text-muted);
+}
+
+.pd-stock {
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pd-stock.out {
+    color: var(--danger);
+}
+
+.pd-price-box {
+    margin-bottom: 2rem;
+}
+
+.pd-price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+}
+
+.pd-old-price {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    margin-left: 1rem;
+}
+
+.pd-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.pd-actions .btn {
+    flex: 1;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+.pd-wishlist-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.pd-wishlist-btn.active { color: var(--danger); }
+.pd-wishlist-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.pd-wishlist-btn.active:hover { color: var(--danger); border-color: var(--danger); }
+
+.pd-desc {
+    color: var(--text-main);
+    line-height: 1.8;
+}
+
+/* Tabs */
+.tabs {
+    margin-top: 4rem;
+}
+
+.tab-headers {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 2rem;
+}
+
+.tab-btn {
+    padding: 1rem 2rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: var(--accent-primary);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent-primary);
+    border-radius: 3px 3px 0 0;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.5s;
+}
+
+/* Reviews */
+.review-card {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.review-user {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.review-date {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Specs */
+.specs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.specs-table tr {
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.specs-table td {
+    padding: 1rem;
+}
+
+.specs-table td:first-child {
+    color: var(--text-muted);
+    width: 40%;
+}
+
+@media (max-width: 992px) {
+    .product-detail-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .pd-gallery { height: 400px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="product-detail-layout">
+        <!-- Gallery -->
+        <div class="pd-gallery" data-aos="fade-right">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+            <i class="fa fa-image fa-5x" style="color:#adb5bd;"></i>
+            {% endif %}
+        </div>
+
+        <!-- Info -->
+        <div class="pd-info" data-aos="fade-left">
+            <a href="{% url 'catalog' %}?category={{ product.category.slug }}" class="pd-cat">{{ product.category.name }}</a>
+            <h1 class="pd-title">{{ product.name }}</h1>
+            
+            <div class="pd-meta">
+                <div class="pd-rating">
+                    {% if product.rating > 0 %}
+                    <i class="fa fa-star"></i> {{ product.rating }} <span>({{ product.reviews_count }} отзывов)</span>
+                    {% else %}
+                    <span>Нет отзывов</span>
+                    {% endif %}
+                </div>
+                
+                {% if product.in_stock %}
+                <div class="pd-stock"><i class="fa fa-check-circle"></i> В наличии ({{ product.stock }} шт.)</div>
+                {% else %}
+                <div class="pd-stock out"><i class="fa fa-times-circle"></i> Нет в наличии</div>
+                {% endif %}
+            </div>
+
+            <div class="pd-price-box">
+                <span class="pd-price">{{ product.price }} ₸</span>
+                {% if product.old_price %}
+                <span class="pd-old-price">{{ product.old_price }} ₸</span>
+                <span class="badge badge-sale" style="margin-left:1rem; vertical-align:middle;">-{{ product.discount_percent }}%</span>
+                {% endif %}
+            </div>
+
+            <div class="pd-actions">
+                {% if product.in_stock %}
+                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Добавить в корзину</a>
+                {% else %}
+                <button class="btn btn-outline" disabled>Нет в наличии</button>
+                {% endif %}
+                
+                <a href="{% url 'toggle_wishlist' product.id %}" class="pd-wishlist-btn wishlist-btn {% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}active{% endif %}" title="В избранное">
+                    <i class="fa{% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}s{% else %}r{% endif %} fa-heart"></i>
+                </a>
+            </div>
+
+            <div class="pd-desc">
+                <h3>Описание</h3>
+                <p>{{ product.description|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs" data-aos="fade-up">
+        <div class="tab-headers">
+            <button class="tab-btn active" onclick="switchTab('specs')">Характеристики</button>
+            <button class="tab-btn" onclick="switchTab('reviews')">Отзывы ({{ reviews.count }})</button>
+        </div>
+
+        <!-- Specs Tab -->
+        <div id="tab-specs" class="tab-content active">
+            {% if product.specifications %}
+            <table class="specs-table">
+                {% for key, value in product.specifications.items %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="color:var(--text-muted);">Характеристики не указаны.</p>
+            {% endif %}
+        </div>
+
+        <!-- Reviews Tab -->
+        <div id="tab-reviews" class="tab-content">
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 4rem;">
+                <div>
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-user">
+                                    <i class="fa fa-user-circle fa-2x"></i>
+                                    {{ review.user.get_full_name|default:review.user.username }}
+                                </div>
+                                <div class="review-date">{{ review.created_at|date:"d M Y" }}</div>
+                            </div>
+                            <div class="pd-rating" style="margin-bottom:1rem;">
+                                {% for i in "12345" %}
+                                <i class="fa fa-star" style="color: {% if forloop.counter <= review.rating %}var(--warning){% else %}var(--glass-border){% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                            <p>{{ review.text }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color:var(--text-muted);">Пока нет ни одного отзыва. Будьте первым!</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {% if user.is_authenticated %}
+                        <div class="review-card">
+                            <h3 style="margin-bottom:1.5rem;">{% if user_review %}Редактировать отзыв{% else %}Оставить отзыв{% endif %}</h3>
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label class="form-label">Оценка</label>
+                                    <select name="rating" class="form-control" required>
+                                        <option value="5" {% if user_review.rating == 5 %}selected{% endif %}>5 - Отлично</option>
+                                        <option value="4" {% if user_review.rating == 4 %}selected{% endif %}>4 - Хорошо</option>
+                                        <option value="3" {% if user_review.rating == 3 %}selected{% endif %}>3 - Нормально</option>
+                                        <option value="2" {% if user_review.rating == 2 %}selected{% endif %}>2 - Плохо</option>
+                                        <option value="1" {% if user_review.rating == 1 %}selected{% endif %}>1 - Ужасно</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Комментарий</label>
+                                    <textarea name="text" class="form-control" rows="4" required>{{ user_review.text|default:'' }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Отправить отзыв</button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="review-card" style="text-align:center;">
+                            <p style="margin-bottom:1rem;">Только авторизованные пользователи могут оставлять отзывы.</p>
+                            <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline">Войти</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related %}
+    <section class="section" data-aos="fade-up">
+        <h2 class="section-title" style="text-align:left;">Похожие <span class="text-gradient">товары</span></h2>
+        <div class="products-grid">
+            {% for product in related %}
+            <div class="product-card">
+                <a href="{% url 'product_detail' product.slug %}" class="product-img-wrap">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                    {% else %}
+                    <div class="product-img" style="display:flex;align-items:center;justify-content:center;background:#f8f9fa;color:#adb5bd;">
+                        <i class="fa fa-image fa-3x"></i>
+                    </div>
+                    {% endif %}
+                </a>
+                <div class="product-cat">{{ product.category.name }}</div>
+                <h3 class="product-title"><a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a></h3>
+                <div class="product-bottom" style="margin-top:1rem;">
+                    <div class="product-price">
+                        <span class="price-current">{{ product.price }} ₸</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('tab-' + tabId).classList.add('active');
+}
+</script>
+{% endblock %}

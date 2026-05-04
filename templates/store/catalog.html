@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Каталог товаров | TechShop{% endblock %}
+
+{% block extra_css %}
+<style>
+.catalog-layout {
+    display: flex;
+    gap: 2rem;
+    padding-top: 2rem;
+}
+
+.catalog-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.catalog-main {
+    flex-grow: 1;
+}
+
+.filter-box {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    position: sticky;
+    top: 100px;
+}
+
+.filter-title {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.filter-group-title {
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: var(--text-muted);
+}
+
+.price-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.price-inputs input {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: white;
+}
+
+.catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.sort-select {
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: white;
+    outline: none;
+}
+
+.no-results {
+    text-align: center;
+    padding: 4rem 0;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--glass-border);
+}
+
+@media (max-width: 992px) {
+    .catalog-layout { flex-direction: column; }
+    .catalog-sidebar { width: 100%; position: static; }
+    .filter-box { position: static; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="catalog-layout">
+        <!-- SIDEBAR -->
+        <aside class="catalog-sidebar" data-aos="fade-right">
+            <div class="filter-box">
+                <h3 class="filter-title"><i class="fa fa-filter"></i> Фильтры</h3>
+                
+                <form action="{% url 'catalog' %}" method="get" id="filterForm">
+                    {% if search_query %}
+                    <input type="hidden" name="q" value="{{ search_query }}">
+                    {% endif %}
+                    
+                    <div class="filter-group">
+                        <div class="filter-group-title">Категория</div>
+                        <select name="category" class="form-control" onchange="this.form.submit()">
+                            <option value="">Все категории</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {% if brands %}
+                    <div class="filter-group">
+                        <div class="filter-group-title">Бренд</div>
+                        <select name="brand" class="form-control" onchange="this.form.submit()">
+                            <option value="">Все бренды</option>
+                            {% for brand in brands %}
+                            <option value="{{ brand }}" {% if brand_filter == brand %}selected{% endif %}>{{ brand }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div class="filter-group">
+                        <div class="filter-group-title">Цена (₸)</div>
+                        <div class="price-inputs">
+                            <input type="number" name="min_price" placeholder="От" value="{{ min_price|default:'' }}">
+                            <span>-</span>
+                            <input type="number" name="max_price" placeholder="До" value="{{ max_price|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="filter-group" style="display:none;">
+                        <input type="hidden" name="sort" id="sortInput" value="{{ sort_by }}">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Применить</button>
+                    <a href="{% url 'catalog' %}" class="btn btn-outline btn-block" style="margin-top:0.5rem; text-align:center;">Сбросить</a>
+                </form>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="catalog-main">
+            <div class="catalog-header" data-aos="fade-left">
+                <div>
+                    <h1 style="margin-bottom: 0.5rem;">
+                        {% if search_query %}Поиск: «{{ search_query }}»
+                        {% elif selected_category %}{{ selected_category.name }}
+                        {% else %}Каталог товаров{% endif %}
+                    </h1>
+                    <p style="color: var(--text-muted);">Найдено товаров: {{ total_count }}</p>
+                </div>
+
+                <div>
+                    <select class="sort-select" onchange="document.getElementById('sortInput').value=this.value; document.getElementById('filterForm').submit();">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Сначала новые</option>
+                        <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Сначала дешёвые</option>
+                        <option value="-price" {% if sort_by == '-price' %}selected{% endif %}>Сначала дорогие</option>
+                        <option value="-rating" {% if sort_by == '-rating' %}selected{% endif %}>По рейтингу</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По названию</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}50">
+                    <div class="product-badges">
+                        {% if product.is_new %}<span class="badge badge-new" style="background:var(--success)">Новинка</span>{% endif %}
+                        {% if product.discount_percent %}<span class="badge badge-sale">-{{ product.discount_percent }}%</span>{% endif %}
+                    </div>
+                    
+                    <a href="{% url 'toggle_wishlist' product.id %}" class="wishlist-btn {% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}active{% endif %}">
+                        <i class="fa{% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}s{% else %}r{% endif %} fa-heart"></i>
+                    </a>
+
+                    <a href="{% url 'product_detail' product.slug %}" class="product-img-wrap">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                        {% else %}
+                        <div class="product-img" style="display:flex;align-items:center;justify-content:center;background:#f8f9fa;color:#adb5bd;">
+                            <i class="fa fa-image fa-3x"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+
+                    <div class="product-cat">{{ product.category.name }}</div>
+                    <h3 class="product-title"><a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a></h3>
+
+                    <div class="product-rating">
+                        {% if product.rating > 0 %}
+                        <i class="fa fa-star"></i> {{ product.rating }} <span>({{ product.reviews_count }})</span>
+                        {% else %}
+                        <span style="margin-left:0;">Нет отзывов</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-bottom">
+                        <div class="product-price">
+                            <span class="price-current">{{ product.price }} ₸</span>
+                            {% if product.old_price %}<span class="price-old">{{ product.old_price }} ₸</span>{% endif %}
+                        </div>
+                        <a href="{% url 'add_to_cart' product.id %}" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-results" data-aos="fade-in">
+                <i class="fa fa-search fa-3x" style="color:var(--text-muted); margin-bottom:1rem;"></i>
+                <h2>Товары не найдены</h2>
+                <p style="color:var(--text-muted);">Попробуйте изменить параметры фильтрации или поисковый запрос.</p>
+                <a href="{% url 'catalog' %}" class="btn btn-outline" style="margin-top:1rem;">Сбросить фильтры</a>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

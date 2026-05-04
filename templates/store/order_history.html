@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}История заказов | TechShop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="margin: 2rem 0;">История заказов</h1>
+
+    {% if orders %}
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;" data-aos="fade-up">
+        {% for order in orders %}
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <h3 style="margin-bottom: 0.5rem;">Заказ #{{ order.order_number }}</h3>
+                    <div style="color: var(--text-muted); font-size: 0.9rem;"><i class="fa fa-calendar-alt"></i> {{ order.created_at|date:"d M Y, H:i" }}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.5rem;">{{ order.total_price }} ₸</div>
+                    
+                    {% if order.status == 'pending' %}
+                    <span style="background: rgba(255,165,2,0.2); color: var(--warning); padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">В обработке</span>
+                    {% elif order.status == 'confirmed' %}
+                    <span style="background: rgba(0,210,135,0.2); color: var(--success); padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">Подтверждён</span>
+                    {% elif order.status == 'shipped' %}
+                    <span style="background: rgba(108,99,255,0.2); color: var(--accent-primary); padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">Отправлен</span>
+                    {% elif order.status == 'delivered' %}
+                    <span style="background: rgba(0,210,135,0.2); color: var(--success); padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">Доставлен</span>
+                    {% elif order.status == 'cancelled' %}
+                    <span style="background: rgba(255,71,87,0.2); color: var(--danger); padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;">Отменён</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 1rem;">Товары в заказе:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                    {% for item in order.items.all %}
+                    <div style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="width: 50px; height: 50px; background: white; border-radius: var(--radius-sm); padding: 0.2rem;">
+                            {% if item.product and item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" style="width:100%; height:100%; object-fit:contain;">
+                            {% else %}
+                            <i class="fa fa-image" style="color:#adb5bd; font-size:1.5rem; display:block; text-align:center; margin-top:8px;"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 0.2rem;">
+                                {% if item.product %}
+                                <a href="{% url 'product_detail' item.product.slug %}">{{ item.product_name }}</a>
+                                {% else %}
+                                {{ item.product_name }}
+                                {% endif %}
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 0.85rem;">{{ item.quantity }} шт. × {{ item.price }} ₸</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--glass-border); font-size: 0.9rem; color: var(--text-muted);">
+                <i class="fa fa-map-marker-alt"></i> Доставка: {{ order.city }}, {{ order.address }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding: 5rem 0;" data-aos="fade-in">
+        <i class="fa fa-box-open fa-4x" style="color:var(--text-muted); margin-bottom:1.5rem;"></i>
+        <h2>У вас пока нет заказов</h2>
+        <p style="color:var(--text-muted); margin-bottom:2rem;">Сделайте свой первый заказ прямо сейчас!</p>
+        <a href="{% url 'catalog' %}" class="btn btn-primary">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная | TechShop{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Hero Section */
+.hero {
+    position: relative;
+    padding: 6rem 0;
+    overflow: hidden;
+    background: radial-gradient(circle at top right, rgba(108, 99, 255, 0.15), transparent 50%);
+}
+
+.hero-content {
+    max-width: 600px;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.hero-btns {
+    display: flex;
+    gap: 1rem;
+}
+
+.hero-img-box {
+    position: absolute;
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%);
+    width: 500px;
+    height: 500px;
+    z-index: 1;
+}
+
+.hero-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+    animation: float 6s ease-in-out infinite;
+}
+
+.hero-blob {
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    transform: translateY(-50%);
+    width: 400px;
+    height: 400px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    z-index: 0;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Sections */
+.section {
+    padding: 4rem 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+}
+
+.section-header .section-title {
+    margin-bottom: 0;
+    text-align: left;
+}
+
+.view-all {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.view-all:hover {
+    color: var(--accent-primary);
+}
+
+/* Categories Banner */
+.cat-banners {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+}
+
+.cat-banner {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    transition: var(--transition);
+}
+
+.cat-banner:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-primary);
+}
+
+.cat-banner i {
+    font-size: 5rem;
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    opacity: 0.1;
+    color: white;
+    transition: var(--transition);
+}
+
+.cat-banner:hover i {
+    transform: scale(1.1);
+    color: var(--accent-primary);
+    opacity: 0.2;
+}
+
+.cat-banner-content {
+    position: relative;
+    z-index: 2;
+}
+
+.cat-banner h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.cat-banner p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .hero-img-box { opacity: 0.3; right: -20%; }
+    .cat-banners { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .hero-img-box { display: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content" data-aos="fade-right">
+            <h1 class="hero-title">Будущее технологий <br><span class="text-gradient">уже здесь</span></h1>
+            <p class="hero-subtitle">Инновационная электроника по лучшим ценам. Найдите идеальный девайс с помощью нашего ИИ-ассистента.</p>
+            <div class="hero-btns">
+                <a href="{% url 'catalog' %}" class="btn btn-primary">В каталог <i class="fa fa-arrow-right"></i></a>
+                <a href="{% url 'assistant' %}" class="btn btn-outline">Спросить ИИ <i class="fa fa-robot"></i></a>
+            </div>
+        </div>
+        
+        <div class="hero-blob"></div>
+        <div class="hero-img-box" data-aos="fade-left" data-aos-delay="200">
+            <!-- Fallback image layout -->
+            <div style="width: 100%; height: 100%; background: linear-gradient(45deg, #2a2a35, #1a1a24); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                <i class="fa fa-laptop" style="font-size: 8rem; color: #6c63ff; filter: drop-shadow(0 0 20px rgba(108, 99, 255, 0.5));"></i>
+                <div style="font-size: 2rem; font-weight: bold; color: white;">MacBook Pro</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- CATEGORY BANNERS -->
+    <div class="cat-banners" data-aos="fade-up">
+        {% for cat in categories|slice:":3" %}
+        <a href="{% url 'catalog' %}?category={{ cat.slug }}" class="cat-banner">
+            <div class="cat-banner-content">
+                <h3>{{ cat.name }}</h3>
+                <p>Перейти в раздел &rarr;</p>
+            </div>
+            <i class="fa {{ cat.icon }}"></i>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- FEATURED PRODUCTS -->
+    {% if featured_products %}
+    <section class="section">
+        <div class="section-header" data-aos="fade-up">
+            <h2 class="section-title">Топ <span class="text-gradient">продаж</span></h2>
+            <a href="{% url 'catalog' %}" class="view-all">Смотреть все</a>
+        </div>
+        <div class="products-grid">
+            {% for product in featured_products %}
+            <div class="product-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                <div class="product-badges">
+                    <span class="badge badge-new">Хит</span>
+                    {% if product.discount_percent %}
+                    <span class="badge badge-sale">-{{ product.discount_percent }}%</span>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url 'toggle_wishlist' product.id %}" class="wishlist-btn {% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}active{% endif %}" title="В избранное">
+                    <i class="fa{% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}s{% else %}r{% endif %} fa-heart"></i>
+                </a>
+
+                <a href="{% url 'product_detail' product.slug %}" class="product-img-wrap">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                    {% else %}
+                    <div class="product-img" style="display:flex;align-items:center;justify-content:center;background:#f8f9fa;color:#adb5bd;">
+                        <i class="fa fa-image fa-3x"></i>
+                    </div>
+                    {% endif %}
+                </a>
+
+                <div class="product-cat">{{ product.category.name }}</div>
+                <h3 class="product-title">
+                    <a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a>
+                </h3>
+
+                <div class="product-rating">
+                    {% if product.rating > 0 %}
+                    <i class="fa fa-star"></i> {{ product.rating }} <span>({{ product.reviews_count }})</span>
+                    {% else %}
+                    <span style="margin-left:0;">Нет отзывов</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-bottom">
+                    <div class="product-price">
+                        <span class="price-current">{{ product.price }} ₸</span>
+                        {% if product.old_price %}
+                        <span class="price-old">{{ product.old_price }} ₸</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'add_to_cart' product.id %}" class="add-to-cart-btn" title="В корзину">
+                        <i class="fa fa-shopping-cart"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- NEW PRODUCTS -->
+    {% if new_products %}
+    <section class="section">
+        <div class="section-header" data-aos="fade-up">
+            <h2 class="section-title">Новые <span class="text-gradient">поступления</span></h2>
+        </div>
+        <div class="products-grid">
+            {% for product in new_products %}
+            <div class="product-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                <div class="product-badges">
+                    <span class="badge badge-new" style="background:var(--success)">Новинка</span>
+                </div>
+                
+                <a href="{% url 'toggle_wishlist' product.id %}" class="wishlist-btn {% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}active{% endif %}" title="В избранное">
+                    <i class="fa{% if request.user.is_authenticated and product in request.user.profile.wishlist.all %}s{% else %}r{% endif %} fa-heart"></i>
+                </a>
+
+                <a href="{% url 'product_detail' product.slug %}" class="product-img-wrap">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                    {% else %}
+                    <div class="product-img" style="display:flex;align-items:center;justify-content:center;background:#f8f9fa;color:#adb5bd;">
+                        <i class="fa fa-image fa-3x"></i>
+                    </div>
+                    {% endif %}
+                </a>
+
+                <div class="product-cat">{{ product.category.name }}</div>
+                <h3 class="product-title">
+                    <a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a>
+                </h3>
+
+                <div class="product-bottom" style="margin-top:1rem;">
+                    <div class="product-price">
+                        <span class="price-current">{{ product.price }} ₸</span>
+                    </div>
+                    <a href="{% url 'add_to_cart' product.id %}" class="add-to-cart-btn" title="В корзину">
+                        <i class="fa fa-shopping-cart"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- AI ASSISTANT BANNER -->
+    <section class="section" data-aos="zoom-in">
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 3rem; text-align: center; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -50px; left: -50px; width: 150px; height: 150px; background: var(--accent-primary); filter: blur(60px); opacity: 0.2;"></div>
+            <div style="position: absolute; bottom: -50px; right: -50px; width: 150px; height: 150px; background: var(--success); filter: blur(60px); opacity: 0.2;"></div>
+            
+            <i class="fa fa-robot" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 1.5rem; text-shadow: var(--shadow-glow);"></i>
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Не знаете, что выбрать?</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem;">
+                Наш умный ИИ-ассистент поможет подобрать идеальную технику под ваши задачи и бюджет. Просто напишите, что вам нужно.
+            </p>
+            <a href="{% url 'assistant' %}" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                Начать чат с ИИ <i class="fa fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина | TechShop{% endblock %}
+
+{% block extra_css %}
+<style>
+.cart-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.cart-items {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.cart-item-img {
+    width: 100px;
+    height: 100px;
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-item-img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.cart-item-info {
+    flex-grow: 1;
+}
+
+.cart-item-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.cart-item-price {
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
+.cart-qty {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    padding: 0.2rem 0.5rem;
+}
+
+.qty-btn {
+    background: none;
+    border: none;
+    color: var(--text-main);
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.qty-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.qty-input {
+    width: 30px;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cart-item-subtotal {
+    font-size: 1.2rem;
+    font-weight: 700;
+    width: 100px;
+    text-align: right;
+}
+
+.cart-item-remove {
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    transition: var(--transition);
+}
+
+.cart-item-remove:hover {
+    color: var(--danger);
+}
+
+.cart-summary {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+}
+
+@media (max-width: 992px) {
+    .cart-layout { grid-template-columns: 1fr; }
+    .cart-item { flex-direction: column; align-items: flex-start; gap: 1rem; position: relative; }
+    .cart-item-subtotal { width: auto; text-align: left; }
+    .cart-item-remove { position: absolute; top: 1rem; right: 0; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="margin: 2rem 0;">Корзина</h1>
+
+    {% if cart.items.exists %}
+    <div class="cart-layout">
+        <div class="cart-items" data-aos="fade-right">
+            {% for item in cart.items.all %}
+            <div class="cart-item" id="item-{{ item.id }}">
+                <div class="cart-item-img">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                    <i class="fa fa-image fa-2x" style="color:#adb5bd;"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="cart-item-info">
+                    <div class="cart-item-title"><a href="{% url 'product_detail' item.product.slug %}">{{ item.product.name }}</a></div>
+                    <div class="cart-item-price">{{ item.product.price }} ₸</div>
+                </div>
+
+                <div class="cart-qty">
+                    <button type="button" class="qty-btn" onclick="updateQty({{ item.id }}, -1)">-</button>
+                    <input type="number" id="qty-{{ item.id }}" class="qty-input" value="{{ item.quantity }}" readonly>
+                    <button type="button" class="qty-btn" onclick="updateQty({{ item.id }}, 1)">+</button>
+                </div>
+
+                <div class="cart-item-subtotal" id="subtotal-{{ item.id }}">{{ item.subtotal }} ₸</div>
+
+                <button class="cart-item-remove" onclick="removeItem({{ item.id }})"><i class="fa fa-trash"></i></button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary" data-aos="fade-left">
+            <h3 style="margin-bottom:1.5rem;">Итого к оплате</h3>
+            
+            <div class="summary-row">
+                <span>Товары (<span id="summary-count">{{ cart.count }}</span> шт.)</span>
+                <span id="summary-items-total">{{ cart.total }} ₸</span>
+            </div>
+            <div class="summary-row">
+                <span>Доставка</span>
+                <span style="color:var(--success);">Бесплатно</span>
+            </div>
+
+            <div class="summary-total">
+                <span>Итого:</span>
+                <span id="summary-final-total" style="color:var(--accent-primary);">{{ cart.total }} ₸</span>
+            </div>
+
+            <a href="{% url 'checkout' %}" class="btn btn-primary btn-block" style="margin-top:2rem; padding:1rem; font-size:1.1rem;">
+                Перейти к оформлению
+            </a>
+            
+            <div style="margin-top:1.5rem; display:flex; gap:1rem; justify-content:center; color:var(--text-muted); font-size:1.5rem;">
+                <i class="fab fa-cc-visa"></i>
+                <i class="fab fa-cc-mastercard"></i>
+                <i class="fab fa-apple-pay"></i>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding: 5rem 0;" data-aos="fade-in">
+        <div style="width:120px; height:120px; border-radius:50%; background:var(--bg-card); display:flex; align-items:center; justify-content:center; margin:0 auto 2rem; border:1px solid var(--glass-border);">
+            <i class="fa fa-shopping-cart fa-3x" style="color:var(--text-muted);"></i>
+        </div>
+        <h2>Ваша корзина пуста</h2>
+        <p style="color:var(--text-muted); margin-bottom:2rem;">Похоже, вы еще не добавили ни одного товара.</p>
+        <a href="{% url 'catalog' %}" class="btn btn-primary" style="padding:1rem 2rem;">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function updateQty(itemId, change) {
+    const input = document.getElementById(`qty-${itemId}`);
+    let newQty = parseInt(input.value) + change;
+    if (newQty < 1) return;
+    
+    // Optimistic UI update
+    input.value = newQty;
+
+    // AJAX request
+    const formData = new FormData();
+    formData.append('quantity', newQty);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch(`/cart/update/${itemId}/`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`subtotal-${itemId}`).textContent = data.item_subtotal + ' ₸';
+            updateSummary(data);
+        }
+    });
+}
+
+function removeItem(itemId) {
+    fetch(`/cart/remove/${itemId}/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const itemElement = document.getElementById(`item-${itemId}`);
+            itemElement.style.opacity = '0';
+            setTimeout(() => {
+                itemElement.remove();
+                if (data.cart_count === 0) {
+                    location.reload(); // Reload to show empty cart message
+                } else {
+                    updateSummary(data);
+                }
+            }, 300);
+        }
+    });
+}
+
+function updateSummary(data) {
+    document.getElementById('summary-count').textContent = data.cart_count;
+    document.getElementById('summary-items-total').textContent = data.cart_total + ' ₸';
+    document.getElementById('summary-final-total').textContent = data.cart_total + ' ₸';
+    
+    // Update navbar badges
+    document.querySelectorAll('.cart-badge').forEach(badge => {
+        badge.textContent = data.cart_count;
+        if(data.cart_count > 0) badge.style.display = 'flex';
+        else badge.style.display = 'none';
+    });
+}
+</script>
+{% endblock %}

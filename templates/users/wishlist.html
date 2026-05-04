@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Избранное | TechShop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="margin: 2rem 0;">Избранное</h1>
+
+    {% if wishlist %}
+    <div class="products-grid">
+        {% for product in wishlist %}
+        <div class="product-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}50">
+            <div class="product-badges">
+                {% if product.discount_percent %}
+                <span class="badge badge-sale">-{{ product.discount_percent }}%</span>
+                {% endif %}
+            </div>
+            
+            <a href="{% url 'toggle_wishlist' product.id %}" class="wishlist-btn active" title="Убрать из избранного">
+                <i class="fas fa-heart"></i>
+            </a>
+
+            <a href="{% url 'product_detail' product.slug %}" class="product-img-wrap">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                {% else %}
+                <div class="product-img" style="display:flex;align-items:center;justify-content:center;background:#f8f9fa;color:#adb5bd;">
+                    <i class="fa fa-image fa-3x"></i>
+                </div>
+                {% endif %}
+            </a>
+
+            <div class="product-cat">{{ product.category.name }}</div>
+            <h3 class="product-title"><a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a></h3>
+
+            <div class="product-bottom" style="margin-top:1rem;">
+                <div class="product-price">
+                    <span class="price-current">{{ product.price }} ₸</span>
+                </div>
+                <a href="{% url 'add_to_cart' product.id %}" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding: 5rem 0;" data-aos="fade-in">
+        <i class="far fa-heart fa-4x" style="color:var(--text-muted); margin-bottom:1.5rem;"></i>
+        <h2>В избранном пока пусто</h2>
+        <p style="color:var(--text-muted); margin-bottom:2rem;">Добавляйте товары в избранное, чтобы не потерять их.</p>
+        <a href="{% url 'catalog' %}" class="btn btn-primary">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

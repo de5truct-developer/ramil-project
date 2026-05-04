@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TechShop — магазин современной техники с ИИ-ассистентом. Смартфоны, ноутбуки, наушники и многое другое.">
+    <title>{% block title %}TechShop — Магазин техники{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/logo.svg' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+    <div class="container navbar-inner">
+        <a href="{% url 'index' %}" class="navbar-brand">
+            <img src="{% static 'images/logo.svg' %}" alt="TechShop" class="navbar-logo">
+            <span class="brand-name">Tech<span class="brand-accent">Shop</span></span>
+        </a>
+
+        <div class="navbar-search">
+            <form action="{% url 'catalog' %}" method="get" class="search-form">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" name="q" placeholder="Поиск товаров..." class="search-input" value="{{ request.GET.q }}">
+                <button type="submit" class="search-btn">Найти</button>
+            </form>
+        </div>
+
+        <div class="navbar-actions">
+            <a href="{% url 'assistant' %}" class="nav-icon-btn" title="ИИ-ассистент">
+                <i class="fa fa-robot"></i>
+                <span class="nav-icon-label">Ассистент</span>
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'wishlist' %}" class="nav-icon-btn" title="Избранное">
+                <i class="fa fa-heart"></i>
+            </a>
+            <a href="{% url 'profile' %}" class="nav-icon-btn" title="Профиль">
+                <i class="fa fa-user"></i>
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="nav-icon-btn" title="Войти">
+                <i class="fa fa-sign-in-alt"></i>
+            </a>
+            {% endif %}
+            <a href="{% url 'cart' %}" class="nav-icon-btn cart-btn" title="Корзина">
+                <i class="fa fa-shopping-cart"></i>
+                {% if cart_count > 0 %}
+                <span class="cart-badge">{{ cart_count }}</span>
+                {% endif %}
+            </a>
+        </div>
+
+        <button class="burger-btn" id="burgerBtn" aria-label="Меню">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <form action="{% url 'catalog' %}" method="get" class="mobile-search">
+            <input type="text" name="q" placeholder="Поиск..." class="search-input">
+            <button type="submit"><i class="fa fa-search"></i></button>
+        </form>
+        <div class="mobile-cats">
+            {% for cat in all_categories %}
+            <a href="{% url 'catalog' %}?category={{ cat.slug }}"><i class="fa {{ cat.icon }}"></i> {{ cat.name }}</a>
+            {% endfor %}
+        </div>
+        <div class="mobile-links">
+            <a href="{% url 'cart' %}"><i class="fa fa-shopping-cart"></i> Корзина {% if cart_count > 0 %}({{ cart_count }}){% endif %}</a>
+            <a href="{% url 'assistant' %}"><i class="fa fa-robot"></i> ИИ-ассистент</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}"><i class="fa fa-user"></i> Профиль</a>
+            <a href="{% url 'logout' %}"><i class="fa fa-sign-out-alt"></i> Выйти</a>
+            {% else %}
+            <a href="{% url 'login' %}"><i class="fa fa-sign-in-alt"></i> Войти</a>
+            <a href="{% url 'register' %}"><i class="fa fa-user-plus"></i> Регистрация</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- CATEGORY NAV -->
+<div class="cat-nav">
+    <div class="container cat-nav-inner">
+        <a href="{% url 'catalog' %}" class="cat-nav-link {% if request.path == '/catalog/' and not request.GET.category %}active{% endif %}">
+            <i class="fa fa-th-large"></i> Все товары
+        </a>
+        {% for cat in all_categories %}
+        <a href="{% url 'catalog' %}?category={{ cat.slug }}" class="cat-nav-link {% if request.GET.category == cat.slug %}active{% endif %}">
+            <i class="fa {{ cat.icon }}"></i> {{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}" id="alert-{{ forloop.counter }}">
+        <i class="fa fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+        <button class="alert-close" onclick="this.parentElement.remove()"><i class="fa fa-times"></i></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- MAIN CONTENT -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <img src="{% static 'images/logo.svg' %}" alt="TechShop" style="height:40px;">
+                    <span>Tech<span class="brand-accent">Shop</span></span>
+                </div>
+                <p>Ваш надёжный магазин современной техники. Лучшие бренды, честные цены, быстрая доставка.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Каталог</h4>
+                {% for cat in all_categories %}
+                <a href="{% url 'catalog' %}?category={{ cat.slug }}">{{ cat.name }}</a>
+                {% endfor %}
+            </div>
+            <div class="footer-col">
+                <h4>Покупателям</h4>
+                <a href="{% url 'cart' %}">Корзина</a>
+                <a href="{% url 'order_history' %}">Мои заказы</a>
+                <a href="{% url 'profile' %}">Профиль</a>
+                <a href="{% url 'assistant' %}">ИИ-ассистент</a>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <p><i class="fa fa-phone"></i> +77082609716</p>
+                <p><i class="fa fa-envelope"></i> info@techshop.kz</p>
+                <p><i class="fa fa-map-marker-alt"></i> город Актобе, ул. Смагулова 1а</p>
+                <p><i class="fa fa-clock"></i> Пн–Вс: 9:00–21:00</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 TechShop. Все права защищены.</p>
+            <div class="footer-pay">
+                <i class="fab fa-cc-visa"></i>
+                <i class="fab fa-cc-mastercard"></i>
+                <i class="fab fa-apple-pay"></i>
+                <i class="fab fa-google-pay"></i>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- FLOATING CHAT BUTTON -->
+<a href="{% url 'assistant' %}" class="float-chat-btn" title="ИИ-ассистент">
+    <i class="fa fa-robot"></i>
+    <span class="float-chat-tooltip">ИИ-ассистент</span>
+</a>
+
+<!-- SCROLL TO TOP -->
+<button class="scroll-top-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <i class="fa fa-chevron-up"></i>
+</button>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

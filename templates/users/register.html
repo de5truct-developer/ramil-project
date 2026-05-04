@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация | TechShop{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 4rem 0;">
+    <div style="width: 100%; max-width: 500px; background: var(--bg-card); padding: 3rem; border-radius: var(--radius-lg); border: 1px solid var(--glass-border); box-shadow: var(--shadow-md);" data-aos="fade-up">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fa fa-user-plus fa-3x text-gradient" style="margin-bottom: 1rem;"></i>
+            <h2>Создание аккаунта</h2>
+            <p style="color: var(--text-muted);">Присоединяйтесь к TechShop</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Имя</label>
+                    <input type="text" name="first_name" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Фамилия</label>
+                    <input type="text" name="last_name" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Логин *</label>
+                <input type="text" name="username" class="form-control" required placeholder="Только латинские буквы и цифры">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email *</label>
+                <input type="email" name="email" class="form-control" required placeholder="ваша@почта.com">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Пароль *</label>
+                <input type="password" name="password1" class="form-control" required minlength="8">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Подтвердите пароль *</label>
+                <input type="password" name="password2" class="form-control" required minlength="8">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1.1rem; margin-top: 1.5rem;">
+                Зарегистрироваться
+            </button>
+        </form>
+
+        <div style="margin-top: 2rem; text-align: center; color: var(--text-muted); border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+            Уже есть аккаунт? <a href="{% url 'login' %}" style="font-weight: 600;">Войти</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

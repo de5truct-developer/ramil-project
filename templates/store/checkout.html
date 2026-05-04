@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}Оформление заказа | TechShop{% endblock %}
+
+{% block extra_css %}
+<style>
+.checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.checkout-form {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.section-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--accent-primary);
+}
+
+.checkout-summary {
+    background: var(--bg-secondary);
+    border: 1px solid var(--accent-primary);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+    box-shadow: var(--shadow-glow);
+}
+
+.summary-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--glass-border);
+}
+
+.summary-item-img {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 0.2rem;
+}
+
+.summary-item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.summary-item-info {
+    flex: 1;
+}
+
+.summary-item-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+}
+
+.summary-item-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.payment-method {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.02);
+}
+
+.fake-card {
+    background: linear-gradient(135deg, #2a2a35, #1a1a24);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.fake-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 100px;
+    height: 100px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.5;
+}
+
+.fake-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 0.8rem;
+    border-radius: 6px;
+    width: 100%;
+    margin-bottom: 1rem;
+    font-family: monospace;
+}
+
+@media (max-width: 992px) {
+    .checkout-layout { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="margin: 2rem 0;">Оформление заказа</h1>
+
+    <div class="checkout-layout">
+        <!-- FORM -->
+        <div class="checkout-form" data-aos="fade-right">
+            <form method="post">
+                {% csrf_token %}
+                
+                <h3 class="section-label"><i class="fa fa-user"></i> Личные данные</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Имя *</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ initial.first_name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фамилия *</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ initial.last_name }}" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" name="email" class="form-control" value="{{ initial.email }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Телефон *</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ initial.phone }}" placeholder="+7 (___) ___-__-__" required>
+                    </div>
+                </div>
+
+                <h3 class="section-label" style="margin-top:1rem;"><i class="fa fa-map-marker-alt"></i> Доставка</h3>
+                <div class="form-group">
+                    <label class="form-label">Город *</label>
+                    <input type="text" name="city" class="form-control" value="{{ initial.city }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Полный адрес (улица, дом, кв) *</label>
+                    <textarea name="address" class="form-control" rows="2" required>{{ initial.address }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Комментарий к заказу (необязательно)</label>
+                    <textarea name="notes" class="form-control" rows="3" placeholder="Например: позвонить за час до доставки"></textarea>
+                </div>
+
+                <div class="payment-method">
+                    <h4 style="margin-bottom:0.5rem;"><i class="fa fa-credit-card"></i> Оплата онлайн</h4>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+                        Безопасная оплата. Введите данные карты для оформления заказа.
+                    </p>
+                    
+                    <div class="fake-card">
+                        <input type="text" class="fake-input" placeholder="Номер карты (необязательно)" maxlength="19">
+                        <div style="display:flex; gap:1rem;">
+                            <input type="text" class="fake-input" placeholder="MM/YY" style="flex:1;">
+                            <input type="text" class="fake-input" placeholder="CVC" style="flex:1;">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:2rem; padding:1.2rem; font-size:1.2rem; border-radius:var(--radius-lg);">
+                    Подтвердить и оплатить {{ cart.total }} ₸
+                </button>
+            </form>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="checkout-summary" data-aos="fade-left">
+            <h3 style="margin-bottom:1.5rem; text-align:center;">Ваш заказ</h3>
+            
+            <div style="max-height: 400px; overflow-y: auto; padding-right:0.5rem; margin-bottom:1rem;">
+                {% for item in cart.items.all %}
+                <div class="summary-item">
+                    <div class="summary-item-img">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        {% else %}
+                        <i class="fa fa-image" style="color:#adb5bd; font-size:2rem; padding:0.8rem;"></i>
+                        {% endif %}
+                    </div>
+                    <div class="summary-item-info">
+                        <div class="summary-item-title">{{ item.product.name }}</div>
+                        <div class="summary-item-meta">{{ item.quantity }} шт. × {{ item.product.price }} ₸</div>
+                        <div style="font-weight:700; color:var(--accent-primary); margin-top:0.3rem;">{{ item.subtotal }} ₸</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; color:var(--text-muted);">
+                <span>Товары:</span>
+                <span>{{ cart.total }} ₸</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:1rem; color:var(--text-muted);">
+                <span>Доставка:</span>
+                <span style="color:var(--success);">0 ₸</span>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.2); font-size:1.5rem; font-weight:800; color:white;">
+                <span>Итого:</span>
+                <span class="text-gradient">{{ cart.total }} ₸</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

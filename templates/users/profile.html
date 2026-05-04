@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой профиль | TechShop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display: grid; grid-template-columns: 250px 1fr; gap: 3rem; margin-top: 3rem; margin-bottom: 5rem;">
+        
+        <!-- Sidebar Menu -->
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 2rem; height: fit-content;" data-aos="fade-right">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--accent-primary); margin: 0 auto 1rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <i class="fa fa-user fa-3x" style="color: var(--text-muted);"></i>
+                    {% endif %}
+                </div>
+                <h3 style="margin-bottom: 0.2rem;">{{ user.get_full_name|default:user.username }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">{{ user.email }}</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="{% url 'profile' %}" class="btn" style="background: var(--accent-primary); color: white; justify-content: flex-start;"><i class="fa fa-user-cog" style="width:25px;"></i> Настройки</a>
+                <a href="{% url 'order_history' %}" class="btn btn-outline" style="justify-content: flex-start; border: none; text-align: left;"><i class="fa fa-box" style="width:25px;"></i> Мои заказы</a>
+                <a href="{% url 'wishlist' %}" class="btn btn-outline" style="justify-content: flex-start; border: none; text-align: left;"><i class="fa fa-heart" style="width:25px;"></i> Избранное</a>
+                <a href="{% url 'logout' %}" class="btn btn-outline" style="justify-content: flex-start; border: none; text-align: left; color: var(--danger); margin-top: 1rem;"><i class="fa fa-sign-out-alt" style="width:25px;"></i> Выйти</a>
+            </div>
+        </div>
+
+        <!-- Profile Settings -->
+        <div style="background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 3rem;" data-aos="fade-left">
+            <h2 style="margin-bottom: 2rem;">Настройки профиля</h2>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <h4 style="margin-bottom: 1.5rem; color: var(--accent-primary); border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">Основные данные</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Имя</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Телефон</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ profile.phone }}">
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 1rem; margin-bottom: 1.5rem; color: var(--accent-primary); border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">Адрес доставки</h4>
+                <div class="form-group">
+                    <label class="form-label">Город</label>
+                    <input type="text" name="city" class="form-control" value="{{ profile.city }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Полный адрес</label>
+                    <textarea name="address" class="form-control" rows="2">{{ profile.address }}</textarea>
+                </div>
+
+                <h4 style="margin-top: 1rem; margin-bottom: 1.5rem; color: var(--accent-primary); border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">Аватар</h4>
+                <div class="form-group">
+                    <input type="file" name="avatar" class="form-control" accept="image/*" style="padding: 0.6rem;">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 2rem; padding: 1rem 2.5rem; font-size: 1.1rem;">
+                    <i class="fa fa-save"></i> Сохранить изменения
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
