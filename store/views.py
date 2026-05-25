@@ -212,7 +212,7 @@ def checkout(request):
             notes=request.POST.get('notes', ''),
             total_price=cart.total,
         )
-        for item in cart.items.all():
+        for item in cart.items.select_related('product').all():
             OrderItem.objects.create(
                 order=order,
                 product=item.product,
@@ -220,6 +220,10 @@ def checkout(request):
                 price=item.product.price,
                 quantity=item.quantity,
             )
+            item.product.stock -= item.quantity
+            if item.product.stock < 0:
+                item.product.stock = 0
+            item.product.save(update_fields=['stock'])
         cart.items.all().delete()
         messages.success(request, f'Заказ #{order.order_number} успешно оформлен!')
         return redirect('order_success', order_number=order.order_number)
